@@ -49,6 +49,10 @@ public class User {
     private String providerId;
     private String avatar;
 
+    // Relacionamento com Professional (para usuários do tipo PROFESSIONAL)
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Professional professional;
+
     @PrePersist
     protected void onCreate() {
         if (this.createdAt == null) {
