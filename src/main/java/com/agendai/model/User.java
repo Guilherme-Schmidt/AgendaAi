@@ -1,31 +1,31 @@
 package com.agendai.model;
-
+import com.agendai.model.base.BaseEntity;
+import com.agendai.model.enums.UserType;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "users")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class User {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+@EqualsAndHashCode(callSuper = true, of = "email")
+public class User extends BaseEntity {
 
+    @Column(nullable = false)
     private String name;
 
     @Column(unique = true, nullable = false)
     private String email;
 
-    @Column(name = "password")
+    @JsonIgnore
+    @Column(nullable = false)
     private String password;
 
     @Enumerated(EnumType.STRING)
@@ -33,30 +33,28 @@ public class User {
     private UserType type;
 
     private String phone;
-
-    @Column(name = "cpf")
     private String cpf;
-
     private LocalDate birthDate;
 
     @Builder.Default
     private Boolean active = true;
 
-    @Builder.Default
-    private LocalDateTime createdAt = LocalDateTime.now();
-
+    // OAuth fields
     private String provider;
     private String providerId;
     private String avatar;
 
-    // Relacionamento com Professional (para usuários do tipo PROFESSIONAL)
+    // Relationships
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Professional professional;
 
-    @PrePersist
-    protected void onCreate() {
-        if (this.createdAt == null) {
-            this.createdAt = LocalDateTime.now();
-        }
+    @OneToMany(mappedBy = "customer", fetch = FetchType.LAZY)
+    private List<Booking> customerBookings;
+
+    @OneToMany(mappedBy = "owner", fetch = FetchType.LAZY)
+    private List<Establishment> ownedEstablishments;
+
+    public User(String email, String password, String name, com.agendai.model.UserType userType) {
+        super();
     }
-}
+}}

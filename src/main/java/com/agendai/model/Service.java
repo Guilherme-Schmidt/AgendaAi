@@ -1,52 +1,46 @@
 package com.agendai.model;
 
+import com.agendai.model.base.BaseEntity;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "services")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Service {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+@EqualsAndHashCode(callSuper = true)
+public class Service extends BaseEntity {
 
-    @Column(length = 100, nullable = false)
+    @Column(nullable = false)
     private String name;
 
     @Column(columnDefinition = "TEXT")
     private String description;
 
-    @Column(precision = 10, scale = 2)
+    @Column(precision = 10, scale = 2, nullable = false)
     private BigDecimal price;
 
+    @Column(name = "duration_minutes", nullable = false)
     private Integer durationMinutes;
 
-    @Column(nullable = false)
-    private Long establishmentId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "establishment_id", nullable = false)
+    private Establishment establishment;
 
-    @Column(nullable = false)
-    private Long categoryId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id", nullable = false)
+    private Category category;
 
     @Builder.Default
     private Boolean active = true;
 
-    @Builder.Default
-    private LocalDateTime createdAt = LocalDateTime.now();
-
-    @PrePersist
-    protected void onCreate() {
-        if (this.createdAt == null) {
-            this.createdAt = LocalDateTime.now();
-        }
-    }
+    // Relationships
+    @OneToMany(mappedBy = "service", fetch = FetchType.LAZY)
+    private List<Booking> bookings;
 }

@@ -1,61 +1,53 @@
 package com.agendai.model;
 
+import com.agendai.model.base.BaseEntity;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
-import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "professionals")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Professional {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+@EqualsAndHashCode(callSuper = true)
+public class Professional extends BaseEntity {
 
-    @Column(name = "user_id", nullable = false, unique = true)
-    private Long userId;
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false, unique = true)
+    private User user;
 
-    // establishment_id é OPCIONAL - pode ser null inicialmente
-    @Column(name = "establishment_id", nullable = true)
-    private Long establishmentId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "establishment_id")
+    private Establishment establishment;
 
     @Column(columnDefinition = "TEXT")
     private String bio;
 
+    @Column(name = "is_available")
     @Builder.Default
-    @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt = LocalDateTime.now();
+    private Boolean available = true;
 
-    // Relacionamento com User
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", insertable = false, updatable = false)
-    private User user;
+    // Relationships
+    @OneToMany(mappedBy = "professional", fetch = FetchType.LAZY)
+    private List<Booking> bookings;
 
-    // Relacionamento com Establishment (opcional)
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "establishment_id", insertable = false, updatable = false)
-    private Establishment establishment;
+    @OneToMany(mappedBy = "professional", fetch = FetchType.LAZY)
+    private List<Review> reviews;
 
-    @PrePersist
-    protected void onCreate() {
-        if (this.createdAt == null) {
-            this.createdAt = LocalDateTime.now();
-        }
-    }
-
-    // Métodos de conveniência
+    // Business methods
     public boolean hasEstablishment() {
-        return establishmentId != null;
+        return establishment != null;
     }
 
-    public boolean isAssignedToEstablishment(Long establishmentId) {
-        return this.establishmentId != null && this.establishmentId.equals(establishmentId);
+    public String getName() {
+        return user != null ? user.getName() : null;
     }
-}
+
+    public String getEmail() {
+        return user != null ? user.getEmail() : null;
+    }
+}}
